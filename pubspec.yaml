@@ -1,0 +1,21 @@
+name: loader_pro
+description: A collection of customizable Flutter loaders (square, reuleaux, squircle, pulsar, ripples, etc).
+version: 0.0.1
+
+homepage: https://github.com/abdelazizmehdi/loader_pro
+repository: https://github.com/abdelazizmehdi/loader_pro
+issue_tracker: https://github.com/abdelazizmehdi/loader_pro/issues
+documentation: https://github.com/abdelazizmehdi/loader_pro#readme
+
+environment:
+  sdk: ">=2.17.0 <4.0.0"
+  flutter: ">=3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  assets:
+    - doc/logo.png

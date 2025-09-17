@@ -1,0 +1,14 @@
+name: loader_pro_example
+description: Example app for loader_pro package
+publish_to: "none" # هذا يمنع محاولة نشر المشروع على pub.dev
+version: 0.0.1
+
+environment:
+  sdk: ">=2.17.0 <4.0.0"
+  flutter: ">=3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  loader_pro:
+    path: ../
