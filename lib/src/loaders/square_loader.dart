@@ -5,18 +5,20 @@ class SquareLoader extends StatefulWidget {
   final double size;
   final double stroke;
   final double strokeLength;
-  final double bgOpacity;
+  final Color bgColor; // changed from bgOpacity
   final double speed;
   final Color color;
+  final Curve curve; // new: animation curve
 
   const SquareLoader({
     Key? key,
     this.size = 35,
     this.stroke = 5,
     this.strokeLength = 0.25,
-    this.bgOpacity = 0.1,
+    this.bgColor = const Color(0x1A673AB7),
     this.speed = 1.2,
-    this.color = Colors.black,
+    this.color = Colors.deepPurpleAccent,
+    this.curve = Curves.easeInOut, // default curve
   }) : super(key: key);
 
   @override
@@ -26,6 +28,7 @@ class SquareLoader extends StatefulWidget {
 class _SquareLoaderState extends State<SquareLoader>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+  late Animation<double> _animation;
 
   @override
   void initState() {
@@ -34,6 +37,8 @@ class _SquareLoaderState extends State<SquareLoader>
       vsync: this,
       duration: Duration(milliseconds: (widget.speed * 1000).toInt()),
     )..repeat();
+
+    _animation = CurvedAnimation(parent: _controller, curve: widget.curve);
   }
 
   @override
@@ -48,14 +53,14 @@ class _SquareLoaderState extends State<SquareLoader>
       width: widget.size,
       height: widget.size,
       child: AnimatedBuilder(
-        animation: _controller,
+        animation: _animation,
         builder: (_, __) {
           return CustomPaint(
             painter: _SquarePainter(
-              progress: _controller.value,
+              progress: _animation.value,
               stroke: widget.stroke,
               strokeLength: widget.strokeLength,
-              bgOpacity: widget.bgOpacity,
+              bgColor: widget.bgColor,
               color: widget.color,
             ),
           );
@@ -69,14 +74,14 @@ class _SquarePainter extends CustomPainter {
   final double progress;
   final double stroke;
   final double strokeLength;
-  final double bgOpacity;
+  final Color bgColor;
   final Color color;
 
   _SquarePainter({
     required this.progress,
     required this.stroke,
     required this.strokeLength,
-    required this.bgOpacity,
+    required this.bgColor,
     required this.color,
   });
 
@@ -92,7 +97,7 @@ class _SquarePainter extends CustomPainter {
     final paintTrack = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = stroke
-      ..color = color.withOpacity(bgOpacity);
+      ..color = bgColor;
 
     final paintCar = Paint()
       ..style = PaintingStyle.stroke
@@ -113,7 +118,8 @@ class _SquarePainter extends CustomPainter {
     canvas.drawPath(dashPath, paintCar);
   }
 
-  Path _createDashPath(Path source, double dashLength, double gapLength, double offset) {
+  Path _createDashPath(
+      Path source, double dashLength, double gapLength, double offset) {
     final metrics = source.computeMetrics().toList();
     final Path path = Path();
     for (final metric in metrics) {

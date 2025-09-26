@@ -1,41 +1,41 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 
-class SquircleLoader extends StatefulWidget {
+class StarLoader extends StatefulWidget {
   final double size;
   final double stroke;
-  final double strokeLength;
-  final Color bgColor; // changed from bgOpacity
   final double speed;
+  final double strokeLength;
   final Color color;
+  final Color bgColor; // <-- added bgColor
   final Curve curve; // optional curve
 
-  const SquircleLoader({
+  const StarLoader({
     Key? key,
-    this.size = 35,
-    this.stroke = 5,
+    this.size = 50,
+    this.stroke = 4,
+    this.speed = 2,
     this.strokeLength = 0.25,
-    // deepPurpleAccent with 10% opacity (0x1A = ~10%)
-    this.bgColor = const Color(0x1A673AB7),
-    this.speed = 1.2,
     this.color = Colors.deepPurpleAccent,
+    this.bgColor = const Color(0x1A673AB7), // 10% opacity deepPurpleAccent
     this.curve = Curves.easeInOut,
   }) : super(key: key);
 
   @override
-  State<SquircleLoader> createState() => _SquircleLoaderState();
+  State<StarLoader> createState() => _StarLoaderState();
 }
 
-class _SquircleLoaderState extends State<SquircleLoader>
+class _StarLoaderState extends State<StarLoader>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
+  late final AnimationController _controller;
+  late final Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: (widget.speed * 1000).toInt()),
+      duration: Duration(milliseconds: (widget.speed * 1000).round()),
     )..repeat();
 
     _animation = CurvedAnimation(parent: _controller, curve: widget.curve);
@@ -56,12 +56,12 @@ class _SquircleLoaderState extends State<SquircleLoader>
         animation: _animation,
         builder: (_, __) {
           return CustomPaint(
-            painter: _SquirclePainter(
+            painter: _StarPainter(
               progress: _animation.value,
               stroke: widget.stroke,
               strokeLength: widget.strokeLength,
-              bgColor: widget.bgColor,
               color: widget.color,
+              bgColor: widget.bgColor, // pass bgColor
             ),
           );
         },
@@ -70,66 +70,73 @@ class _SquircleLoaderState extends State<SquircleLoader>
   }
 }
 
-class _SquirclePainter extends CustomPainter {
+class _StarPainter extends CustomPainter {
   final double progress;
   final double stroke;
   final double strokeLength;
-  final Color bgColor;
   final Color color;
+  final Color bgColor; // added
 
-  _SquirclePainter({
+  _StarPainter({
     required this.progress,
     required this.stroke,
     required this.strokeLength,
-    required this.bgColor,
     required this.color,
+    required this.bgColor, // added
   });
 
-  Path _buildSquirclePath(Size size) {
-    final w = size.width;
-    final h = size.height;
-
+  Path _buildStar(Size size) {
     final path = Path();
-    path.moveTo(0.01 * w, 0.5 * h);
-    path.cubicTo(0.01 * w, 0.156 * h, 0.156 * w, 0.01 * h, 0.5 * w, 0.01 * h);
-    path.cubicTo(0.844 * w, 0.01 * h, 0.99 * w, 0.156 * h, 0.99 * w, 0.5 * h);
-    path.cubicTo(0.99 * w, 0.844 * h, 0.844 * w, 0.99 * h, 0.5 * w, 0.99 * h);
-    path.cubicTo(0.156 * w, 0.99 * h, 0.01 * w, 0.844 * h, 0.01 * w, 0.5 * h);
+    final n = 5; // number of star points
+    final r = size.width / 2;
+    final center = Offset(r, r);
+
+    for (int i = 0; i <= n; i++) {
+      double angle = (i * 2 * pi / n) - pi / 2;
+      double x = center.dx + r * cos(angle);
+      double y = center.dy + r * sin(angle);
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+    }
+    path.close();
     return path;
   }
 
   @override
   void paint(Canvas canvas, Size size) {
-    final path = _buildSquirclePath(size);
+    final path = _buildStar(size);
 
     final bgPaint = Paint()
-      ..color = bgColor
+      ..color = bgColor // use bgColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = stroke;
 
     canvas.drawPath(path, bgPaint);
 
-    final carPaint = Paint()
+    final paint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
       ..strokeWidth = stroke
       ..strokeCap = StrokeCap.round;
 
-    final metrics = path.computeMetrics().first;
-    final length = metrics.length;
+    final metric = path.computeMetrics().first;
+    final length = metric.length;
     final visibleLength = strokeLength * length;
 
     final start = progress * length;
     final end = start + visibleLength;
 
     if (end <= length) {
-      canvas.drawPath(metrics.extractPath(start, end), carPaint);
+      canvas.drawPath(metric.extractPath(start, end), paint);
     } else {
-      canvas.drawPath(metrics.extractPath(start, length), carPaint);
-      canvas.drawPath(metrics.extractPath(0, end - length), carPaint);
+      canvas.drawPath(metric.extractPath(start, length), paint);
+      canvas.drawPath(metric.extractPath(0, end - length), paint);
     }
   }
 
   @override
-  bool shouldRepaint(_SquirclePainter oldDelegate) => true;
+  bool shouldRepaint(_StarPainter oldDelegate) => true;
 }

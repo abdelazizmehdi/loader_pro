@@ -1,41 +1,41 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 
-class SquircleLoader extends StatefulWidget {
+class TrefoilLoader extends StatefulWidget {
   final double size;
   final double stroke;
   final double strokeLength;
-  final Color bgColor; // changed from bgOpacity
-  final double speed;
   final Color color;
-  final Curve curve; // optional curve
+  final Color bgColor; // new bg color parameter
+  final double speed;
+  final Curve curve; // new curve parameter
 
-  const SquircleLoader({
+  const TrefoilLoader({
     Key? key,
-    this.size = 35,
-    this.stroke = 5,
+    this.size = 100,
+    this.stroke = 6,
     this.strokeLength = 0.25,
-    // deepPurpleAccent with 10% opacity (0x1A = ~10%)
-    this.bgColor = const Color(0x1A673AB7),
-    this.speed = 1.2,
     this.color = Colors.deepPurpleAccent,
+    this.bgColor = const Color(0x26363AB7), // ~15% opacity
+    this.speed = 2.5,
     this.curve = Curves.easeInOut,
   }) : super(key: key);
 
   @override
-  State<SquircleLoader> createState() => _SquircleLoaderState();
+  State<TrefoilLoader> createState() => _TrefoilLoaderState();
 }
 
-class _SquircleLoaderState extends State<SquircleLoader>
+class _TrefoilLoaderState extends State<TrefoilLoader>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
+  late final AnimationController _controller;
+  late final Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: (widget.speed * 1000).toInt()),
+      duration: Duration(milliseconds: (widget.speed * 1000).round()),
     )..repeat();
 
     _animation = CurvedAnimation(parent: _controller, curve: widget.curve);
@@ -56,12 +56,12 @@ class _SquircleLoaderState extends State<SquircleLoader>
         animation: _animation,
         builder: (_, __) {
           return CustomPaint(
-            painter: _SquirclePainter(
+            painter: _TrefoilPainter(
               progress: _animation.value,
               stroke: widget.stroke,
               strokeLength: widget.strokeLength,
-              bgColor: widget.bgColor,
               color: widget.color,
+              bgColor: widget.bgColor,
             ),
           );
         },
@@ -70,37 +70,45 @@ class _SquircleLoaderState extends State<SquircleLoader>
   }
 }
 
-class _SquirclePainter extends CustomPainter {
+class _TrefoilPainter extends CustomPainter {
   final double progress;
   final double stroke;
   final double strokeLength;
-  final Color bgColor;
   final Color color;
+  final Color bgColor;
 
-  _SquirclePainter({
+  _TrefoilPainter({
     required this.progress,
     required this.stroke,
     required this.strokeLength,
-    required this.bgColor,
     required this.color,
+    required this.bgColor,
   });
 
-  Path _buildSquirclePath(Size size) {
-    final w = size.width;
-    final h = size.height;
+  Path _buildTrefoilPath(Size size) {
+    final w = size.width / 2;
+    final h = size.height / 2;
 
     final path = Path();
-    path.moveTo(0.01 * w, 0.5 * h);
-    path.cubicTo(0.01 * w, 0.156 * h, 0.156 * w, 0.01 * h, 0.5 * w, 0.01 * h);
-    path.cubicTo(0.844 * w, 0.01 * h, 0.99 * w, 0.156 * h, 0.99 * w, 0.5 * h);
-    path.cubicTo(0.99 * w, 0.844 * h, 0.844 * w, 0.99 * h, 0.5 * w, 0.99 * h);
-    path.cubicTo(0.156 * w, 0.99 * h, 0.01 * w, 0.844 * h, 0.01 * w, 0.5 * h);
+    const int steps = 500;
+    for (int i = 0; i <= steps; i++) {
+      final t = 2 * pi * i / steps;
+      final x = (sin(t) + 2 * sin(2 * t)) * 0.25 * w;
+      final y = (cos(t) - 2 * cos(2 * t)) * 0.25 * h;
+
+      if (i == 0) {
+        path.moveTo(w + x, h + y);
+      } else {
+        path.lineTo(w + x, h + y);
+      }
+    }
+    path.close();
     return path;
   }
 
   @override
   void paint(Canvas canvas, Size size) {
-    final path = _buildSquirclePath(size);
+    final path = _buildTrefoilPath(size);
 
     final bgPaint = Paint()
       ..color = bgColor
@@ -131,5 +139,5 @@ class _SquirclePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_SquirclePainter oldDelegate) => true;
+  bool shouldRepaint(_TrefoilPainter oldDelegate) => true;
 }

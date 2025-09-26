@@ -4,18 +4,20 @@ class ReuleauxLoader extends StatefulWidget {
   final double size;
   final double stroke;
   final double strokeLength;
-  final double bgOpacity;
+  final Color bgColor; // changed from bgOpacity
   final double speed;
   final Color color;
+  final Curve curve;
 
   const ReuleauxLoader({
     Key? key,
     this.size = 37,
     this.stroke = 5,
     this.strokeLength = 0.15,
-    this.bgOpacity = 0.1,
+    this.bgColor = const Color(0x1A673AB7), // new background color
     this.speed = 1.2,
-    this.color = Colors.black,
+    this.color = Colors.deepPurpleAccent,
+    this.curve = Curves.easeInOut,
   }) : super(key: key);
 
   @override
@@ -25,6 +27,7 @@ class ReuleauxLoader extends StatefulWidget {
 class _ReuleauxLoaderState extends State<ReuleauxLoader>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+  late Animation<double> _animation;
 
   @override
   void initState() {
@@ -33,6 +36,8 @@ class _ReuleauxLoaderState extends State<ReuleauxLoader>
       vsync: this,
       duration: Duration(milliseconds: (widget.speed * 1000).toInt()),
     )..repeat();
+
+    _animation = CurvedAnimation(parent: _controller, curve: widget.curve);
   }
 
   @override
@@ -47,14 +52,14 @@ class _ReuleauxLoaderState extends State<ReuleauxLoader>
       width: widget.size,
       height: widget.size,
       child: AnimatedBuilder(
-        animation: _controller,
+        animation: _animation,
         builder: (context, _) {
           return CustomPaint(
             painter: _ReuleauxPainter(
-              progress: _controller.value,
+              progress: _animation.value,
               stroke: widget.stroke,
               strokeLength: widget.strokeLength,
-              bgOpacity: widget.bgOpacity,
+              bgColor: widget.bgColor,
               color: widget.color,
             ),
           );
@@ -68,14 +73,14 @@ class _ReuleauxPainter extends CustomPainter {
   final double progress;
   final double stroke;
   final double strokeLength;
-  final double bgOpacity;
+  final Color bgColor; // changed
   final Color color;
 
   _ReuleauxPainter({
     required this.progress,
     required this.stroke,
     required this.strokeLength,
-    required this.bgOpacity,
+    required this.bgColor,
     required this.color,
   });
 
@@ -100,7 +105,7 @@ class _ReuleauxPainter extends CustomPainter {
     final length = metric.length;
 
     final trackPaint = Paint()
-      ..color = color.withOpacity(bgOpacity)
+      ..color = bgColor // use bgColor instead of opacity
       ..style = PaintingStyle.stroke
       ..strokeWidth = stroke;
 

@@ -3,17 +3,20 @@ import 'package:flutter/material.dart';
 class LineWobbleLoader extends StatefulWidget {
   final double size;
   final double stroke;
-  final double speed; // بالثواني
-  final double bgOpacity;
+  final double speed; // seconds
+  final Color bgColor; // changed from bgOpacity
   final Color color;
+  final Curve curve; // optional animation curve
 
   const LineWobbleLoader({
     Key? key,
     this.size = 40,
     this.stroke = 6,
     this.speed = 1.2,
-    this.bgOpacity = 0.2,
-    this.color = Colors.black,
+    // deepPurpleAccent with ~20% opacity (0x33 = 51/255 ≈ 20%)
+    this.bgColor = const Color(0x33673AB7),
+    this.color = Colors.deepPurpleAccent,
+    this.curve = Curves.easeInOut,
   }) : super(key: key);
 
   @override
@@ -34,7 +37,7 @@ class _LineWobbleLoaderState extends State<LineWobbleLoader>
     )..repeat(reverse: true);
 
     _animation = Tween<double>(begin: -1.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+      CurvedAnimation(parent: _controller, curve: widget.curve),
     );
   }
 
@@ -61,7 +64,7 @@ class _LineWobbleLoaderState extends State<LineWobbleLoader>
                 width: widget.size,
                 height: widget.stroke,
                 decoration: BoxDecoration(
-                  color: widget.color.withOpacity(widget.bgOpacity),
+                  color: widget.bgColor,
                   borderRadius: BorderRadius.circular(widget.stroke / 2),
                 ),
               ),

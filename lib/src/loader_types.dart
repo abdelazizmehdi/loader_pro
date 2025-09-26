@@ -1,8 +1,14 @@
 enum LoaderProType {
   square,
-  reuleaux,
   squircle,
-  pulsar,
+  reuleaux,
+  hatch,
+  star,
+  trefoilL,
   ripples,
-  lineWobble,ping
+  ping,
+  pulsar,
+  lineWobble,
+  dotPulse,
+  dotStream,
 }

@@ -4,12 +4,14 @@ class PulsarLoader extends StatefulWidget {
   final double size;
   final double speed;
   final Color color;
+  final Curve curve; // new curve parameter
 
   const PulsarLoader({
     Key? key,
     this.size = 40,
     this.speed = 1.75,
-    this.color = Colors.black,
+    this.color = Colors.deepPurpleAccent, // updated default color
+    this.curve = Curves.easeInOut,         // default curve
   }) : super(key: key);
 
   @override
@@ -19,6 +21,7 @@ class PulsarLoader extends StatefulWidget {
 class _PulsarLoaderState extends State<PulsarLoader>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+  late Animation<double> _animation;
 
   @override
   void initState() {
@@ -27,6 +30,8 @@ class _PulsarLoaderState extends State<PulsarLoader>
       vsync: this,
       duration: Duration(milliseconds: (widget.speed * 1000).toInt()),
     )..repeat();
+
+    _animation = CurvedAnimation(parent: _controller, curve: widget.curve);
   }
 
   @override
@@ -52,9 +57,9 @@ class _PulsarLoaderState extends State<PulsarLoader>
 
   Widget _buildCircle({required double delay}) {
     return AnimatedBuilder(
-      animation: _controller,
+      animation: _animation,
       builder: (_, __) {
-        final value = (_controller.value + delay) % 1.0; // 0 → 1
+        final value = (_animation.value + delay) % 1.0; // 0 → 1
         final scale = value;
         final opacity = 1.0 - value;
 
